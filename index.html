@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        body {
+            background: #000;
+        }
+        #canvas {
+            display: block;
+            margin: 10px auto;
+            background: url('/img/game_bg_2_hd.jpg');
+        }
+    </style>
+</head>
+<body>
+<button>停下来</button>
+<canvas id="canvas" width="800" height="600"></canvas>
+</body>
+<script src="/js/utils.js"></script>
+<script src="/node_modules/axios/dist/axios.js"></script>
+<script src="/js/instanceAxios.js"></script>
+<script src="/js/loadResources.js"></script>
+<script src="/js/Sprite.js"></script>
+<script src="/js/Fish.js"></script>
+<script src="/js/cannon.js"></script>
+<script src="/js/BottomBar.js"></script>
+<script src="/js/Bullet.js"></script>
+<script>
+    const $ = document.querySelectorAll.bind(document);
+    const canvas = $('#canvas')[0];
+    const ctx = canvas.getContext('2d');
+    const btn = $('button')[0];
+    let stop = false;
+    let type = 1;
+
+    (async function () {
+        try {
+            await loadResources();
+            const cannon = new Cannon(type); // 炮弹
+            const bottomBar = new BottomBar(); // 炮台
+
+
+            canvas.onmousemove = function (e) {
+                const disX = e.offsetX - cannon.x;
+                const disY = cannon.y - e.offsetY;
+                const disL = Math.sqrt(disX*disX + disY*disY);
+                const rotation = angToArc(Math.asin(disX/disL));
+                cannon.rotation = rotation;
+            }
+            const bullets = [];
+            canvas.onclick = function () {
+                const bullet = new Bullet(type);
+                bullet.rotation = cannon.rotation;
+                bullet.x = cannon.x;
+                bullet.y = cannon.y;
+                bullets.push(bullet);
+            }
+
+            requestAnimationFrame(next); // 动画
+            const fishs = [];
+            const timer = setInterval(() => {
+                const fish = new Fish(Math.ceil(Math.random() * 5));
+                fishs.push(fish);
+            }, 300)
+
+            function next() {
+                if(!stop){
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+                    fishs.map((fish, index) => { // 移除屏幕外的鱼
+                        if(fish.outOfCanvas()){
+                            fishs.splice(index, 1);
+                        }
+                    })
+                    // console.log(fishs);
+                    fishs.map(fish => fish.move())
+                    fishs.map(fish => fish.nextFrame())
+                    fishs.map(fish => fish.draw(ctx))
+
+                    bullets.map(bullet => bullet.move())
+                    bullets.map(bullet => bullet.draw(ctx))
+                    bottomBar.draw(ctx); // 炮台
+                    cannon.draw(ctx);
+                    requestAnimationFrame(next)
+                }
+            }
+            btn.onclick = function () {
+                stop=!stop;
+                clearInterval(timer);
+            }
+        }catch(err){
+            alert(err);
+        }
+    })()
+</script>
+</html>
