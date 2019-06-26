@@ -4,7 +4,7 @@ class Fish extends Sprite {
             throw new Error('鱼的类型只能在1到5之间')
         }
         const data = window.__g_resources.fish['fish' + type]
-        const rotation = Math.random() * 10 > 5 ? -90:90;
+        const rotation = Math.random() * 10 > 5 ? -75 - Math.random() * 30:75 + Math.random() * 30;
         const maxTick = Math.ceil(Math.random() * 8) + 4;
         super({
             img: data.img,
@@ -14,7 +14,7 @@ class Fish extends Sprite {
             h: data.frame.h,
             maxFrame: 3,
             maxTick,
-            rotation: rotation + Math.random() * 15,
+            rotation: rotation,
             x: rotation > 0 ? -100 : canvas.width + 100,
             y: Math.random() * canvas.height,
             speed: 8/maxTick * 1.2

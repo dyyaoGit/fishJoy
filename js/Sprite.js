@@ -34,13 +34,15 @@ class Sprite {
     nextFrame () {
         this.tick++;
         if(this.tick == this.maxTick){
-            if(this.frame == this.maxFrame){
+            this.tick = 0;
+            if(this.frame == this.maxFrame){ // 完成一组动画绘制
                 this.frame = 0;
+                return true
             } else {
                 this.frame++;
                 this.sy = this.frame * this.h;
+                return false
             }
-            this.tick = 0;
         }
     }
     outOfCanvas () {

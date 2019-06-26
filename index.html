@@ -28,23 +28,31 @@
 <script src="/js/loadResources.js"></script>
 <script src="/js/Sprite.js"></script>
 <script src="/js/Fish.js"></script>
-<script src="/js/cannon.js"></script>
+<script src="/js/Cannon.js"></script>
 <script src="/js/BottomBar.js"></script>
 <script src="/js/Bullet.js"></script>
+<script src="/js/Buttons.js"></script>
 <script>
     const $ = document.querySelectorAll.bind(document);
     const canvas = $('#canvas')[0];
     const ctx = canvas.getContext('2d');
     const btn = $('button')[0];
     let stop = false;
-    let type = 1;
+    let type = 2;
+    let firing = false;
 
     (async function () {
         try {
             await loadResources();
             const cannon = new Cannon(type); // 炮弹
             const bottomBar = new BottomBar(); // 炮台
-
+            // console.log(__g_resources.bottom['cannon_plus'].img);
+            const btnPlus = new Buttons('cannon_plus');
+            const btnMin = new Buttons('cannon_minus');
+            btnPlus.x = 380;
+            btnPlus.y = 570;
+            btnMin.x = 488;
+            btnMin.y = 570;
 
             canvas.onmousemove = function (e) {
                 const disX = e.offsetX - cannon.x;
@@ -60,6 +68,48 @@
                 bullet.x = cannon.x;
                 bullet.y = cannon.y;
                 bullets.push(bullet);
+                firing = true;
+            }
+
+            canvas.onmousedown = function (ev) {
+                if(
+                    ev.offsetX > btnPlus.x - btnPlus.w/2 &&
+                    ev.offsetX < (btnPlus.x + btnPlus.w/2) &&
+                    ev.offsetY > btnPlus.y - btnPlus.h/2 &&
+                    ev.offsetY < (btnPlus.y + btnPlus.h/2)
+                ){
+                    btnPlus.setNextFrame('cannon_plus_down');
+                } else if(
+                    ev.offsetX > btnMin.x - btnMin.w/2 &&
+                    ev.offsetX < (btnMin.x + btnMin.w/2) &&
+                    ev.offsetY > btnMin.y - btnMin.h/2 &&
+                    ev.offsetY < (btnMin.y + btnMin.h/2)
+                ){
+                    btnMin.setNextFrame('cannon_minus_down');
+                }
+
+                this.onmouseup = function (ev) {
+                    if(
+                        ev.offsetX > btnPlus.x - btnPlus.w/2 &&
+                        ev.offsetX < (btnPlus.x + btnPlus.w/2) &&
+                        ev.offsetY > btnPlus.y - btnPlus.h/2 &&
+                        ev.offsetY < (btnPlus.y + btnPlus.h/2)
+                    ){
+                        btnPlus.setNextFrame('cannon_plus');
+                        type++;
+                        cannon.setNextCannon(type);
+                    } else if
+                    (
+                        ev.offsetX > btnMin.x - btnMin.w/2 &&
+                        ev.offsetX < (btnMin.x + btnMin.w/2) &&
+                        ev.offsetY > btnMin.y - btnMin.h/2 &&
+                        ev.offsetY < (btnMin.y + btnMin.h/2)
+                    ){
+                        btnMin.setNextFrame('cannon_minus');
+                        type--;
+                        cannon.setNextCannon(type);
+                    }
+                }
             }
 
             requestAnimationFrame(next); // 动画
@@ -83,10 +133,23 @@
                     fishs.map(fish => fish.nextFrame())
                     fishs.map(fish => fish.draw(ctx))
 
-                    bullets.map(bullet => bullet.move())
+                    bullets.map((bullet, index, arr) => {
+                        if(bullet.outOfCanvas()){
+                            arr.splice(index, 1);
+                        }
+                        bullet.move();
+                    })
                     bullets.map(bullet => bullet.draw(ctx))
                     bottomBar.draw(ctx); // 炮台
-                    cannon.draw(ctx);
+                    btnPlus.draw(ctx);// 增加按钮
+                    btnMin.draw(ctx); // 减少按钮
+
+                    if(firing){
+                        if(cannon.nextFrame()){
+                            firing = false;
+                        }
+                    }
+                    cannon.draw(ctx);// 发炮
                     requestAnimationFrame(next)
                 }
             }
