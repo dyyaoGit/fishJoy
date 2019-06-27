@@ -27,4 +27,21 @@ class Fish extends Sprite {
         super.draw(ctx);
         this.rotation+=90;
     }
+    collTest (cannon) {
+        const fishR = this.w/2 > this.h/2 ? this.h : this.w;
+        const cannonR = cannon.w/2 > cannon.h/2 ? cannon.h : cannon.w;
+        const totalR = fishR + cannonR;
+
+        const disX = this.x - cannon.x;
+        const disY = this.y - cannon.y;
+
+        const disR = Math.sqrt(Math.pow(disX, 2) + Math.pow(disY, 2));
+        if(disR < totalR){ // 碰撞
+            this.speed = 0;
+            this.startFrame = 4;
+            this.maxFrame = 7;
+            this.die = 1;
+            return true
+        }
+    }
 }

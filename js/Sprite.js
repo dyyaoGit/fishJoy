@@ -14,6 +14,8 @@ class Sprite {
         this.maxFrame = option.maxFrame || 0;
         this.tick = option.tick || 0;
         this.maxTick = option.maxTick || 0;
+        this.startFrame = option.startFrame || 0;
+        this.die = option.die || 0;
     }
     draw (ctx) {
         ctx.save();
@@ -36,7 +38,7 @@ class Sprite {
         if(this.tick == this.maxTick){
             this.tick = 0;
             if(this.frame == this.maxFrame){ // 完成一组动画绘制
-                this.frame = 0;
+                this.frame = this.startFrame;
                 return true
             } else {
                 this.frame++;
